@@ -31,6 +31,9 @@ ax.legend(*scatter.legend_elements(), loc=4)
 
 plt.show()
 ```
+<p align="center"> 
+    <img width=800 src="./visualization/XOR_dataset.png">
+</p>
 
 Notice that points $(x_1, x_2)$ and $(-x_1, -x_2)$ have the same label $1$ while $(-x_1, x_2)$ and $(x_1, -x_2)$ share label $-1$. The idea behind feature mapping is to use this information to get some new information. E.g. if we multiply corresponding $x_1$ and $x_2$ values we get for $(x_1, x_2) \Rightarrow x_1 \cdot x_2 = +x_{1,2} $ and for $(-x_1, -x_2) \Rightarrow -x_1 \cdot -x_2 = +x_{1,2} $. Always positive values! For $(-x_1, x_2)$ and $(x_1, -x_2)$ we would always get negative values because $+ \cdot - = - $ and $- \cdot + = - $. Remember, $X$ is a matrix in $\mathbb{R}^2$ and therefore we add a third row to the matrix that has the product of the values from the first two rows. Therefore we choose d to be 3 and make $X \in \mathbb{R}^3$.
 
@@ -40,3 +43,15 @@ def phi(X):
     return np.concatenate([X, X.prod(1, keepdims=True)], axis=1)
 ```
 Now we have 3 dimensions we can plot if we use $\phi$ on the X_train data.
+
+<p align="center"> 
+    <img width=800 src="./visualization/XOR_featureMapping.png">
+</p>
+
+To have a better view of how the feature mapping impacts the data points let's look at a mesh grid plane:
+
+<p align="center"> 
+    <img width=800 src="./visualization/XOR_dataPlane.png">
+</p>
+
+It's shaped like pringels chip this allowing us to linearly separate it. The network would do this by learning the right w and b to find a plane that separates the positive and negative points. It will idealy find the plane that is the $x_1$-axis and $x_2$-axis plane with $x_3 = 0$
