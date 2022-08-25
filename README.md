@@ -57,5 +57,5 @@ To have a better view of how the feature mapping impacts the data points let's l
 It's shaped like a pringels chip thus allowing us to linearly separate it. The network would do this by learning the right w and b to find a plane that separates the positive and negative points. It will idealy find the plane that is the $x_1$-axis and $x_2$-axis plane with $x_3 = 0$ like this
 
 <p align="center"> 
-    <img width=800 src="./visualization/XOR_dataPlaneClassified.png">
+    <img width=400 src="./visualization/XOR_dataPlaneClassified.png">
 </p>
