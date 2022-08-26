@@ -70,16 +70,26 @@ net = linearNet(2)
 net.fit(net, X_train, y_train, epochs=20000, learning_rate=0.1, loss_function=mse, dloss_function=dmse)
 ```
 <p align="center"> 
-    <img width=400 src="./visualization/XOR_dataPlaneClassified.png">
+    <img width=400 src="./visualization/XOR_badLoss.png">
+</p>
+
+<p align="center"> 
+    <img width=400 src="./visualization/XOR_badAccuracy.png">
 </p>
 
 The loss is close to 1 and the accuracy is only 53%. The accuracy tells us that it is a 53% chance or model predicts the label of a point right. It is as bad at predicting as deciding the label based on a coin flip.
 
 <p align="center"> 
-    <img width=400 src="./visualization/XOR_dataPlaneClassified.png">
+    <img width=400 src="./visualization/XOR_badDecisionBoundary.png">
 </p>
 
-Note: at the beginning it actually went down for many epochs before reaching 50% again. It was doing that to minimize the loss and it tried many epochs to classify the clusters with a line. But then it gave up an just labeled all points as one class. That way the loss could be minimized further and the accuracy went up quickly again before eventually staying around 50%. 
+Note: at the beginning it actually went down for many epochs before reaching 50% again. It was doing that to minimize the loss and it tried many epochs to classify the clusters with a line like this:
+
+<p align="center"> 
+    <img width=400 src="./visualization/XOR_veryBadDecisionBoundary.png">
+</p>
+
+But then it gave up an just labeled all points as one class. That way the loss could be minimized further and the accuracy went up quickly again before eventually staying around 50%. 
 <br>Let's not spend any more time on our failed model. We rather implement $\phi$ into our model. It is as simple as adding it to the class as a function and using it in the _output_ function and when calculating the gradient _grad_w_ in the _grad_ function.
 
 ```bash
@@ -123,13 +133,13 @@ net = linearNet(3)
 net.fit(X_train, y_train, epochs=20000, learning_rate=0.1, loss_function=mse, dloss_function=dmse)
 ```
 <p align="center"> 
-    <img width=400 src="./visualization/XOR_dataPlaneClassified.png">
+    <img width=400 src="./visualization/XOR_goodLoss.png">
 </p>
 
 This is already way better. The loss is 0.4539376487357253
 
 <p align="center"> 
-    <img width=400 src="./visualization/XOR_dataPlaneClassified.png">
+    <img width=400 src="./visualization/XOR_goodAccuracy.png">
 </p>
 
 The accuracy is great at 99% also.
@@ -144,6 +154,12 @@ gives
 ```bash
 The accuracy on test data is 98.0%
 ```
-Now the decision boundary looks almost perfect. It recognized the classes very well but I guess the mistakes come from the problem that there are many values close to the border of the classes in the trainings data. Technically it should be able to split the data perfectly but the steps are very short now that we are close to the minimum of our loss function. Maybe running it many more epochs will give a 100% accuracy at least on trainings data. If you want to copy the code and try yourself please do so.
+Now the decision boundary looks almost perfect. It recognized the classes very well but I guess the mistakes (marked with white crosses) come from the problem that there are many values close to the border of the classes in the trainings data. 
+
+<p align="center"> 
+    <img width=400 src="./visualization/XOR_goodDecisionBoundary.png">
+</p>
+
+Technically it should be able to split the data perfectly but the steps are very short now that we are close to the minimum of our loss function. Maybe running it many more epochs will give a 100% accuracy at least on trainings data. If you want to copy the code and try yourself please do so.
 
 ## Feature mapping on circle data
