@@ -7,7 +7,7 @@ In a previously created Repository, I made a very simple neural network without 
 ## Looking at the Data
 First we generate the XOR data
 
-``` bash
+```bash
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -32,11 +32,12 @@ plt.show()
     <img width=400 src="./visualization/XOR_dataset.png">
 </p>
 
+## Finding a feature mapping for this data
 
 Notice that points $(x_1, x_2)$ and $(-x_1, -x_2)$ have the same label $1$ while $(-x_1, x_2)$ and $(x_1, -x_2)$ share label $-1$. The idea behind feature mapping is to use this information to get some new information. E.g. if we multiply corresponding $x_1$ and $x_2$ values we get for $(x_1, x_2) \Rightarrow x_1 \cdot x_2 = +x_{1,2} $ and for $(-x_1, -x_2) \Rightarrow -x_1 \cdot -x_2 = +x_{1,2} $. Always positive values! For $(-x_1, x_2)$ and $(x_1, -x_2)$ we would always get negative values because $+ \cdot - = - $ and $- \cdot + = - $. Remember, $X$ is a matrix in $\mathbb{R}^2$ and therefore we add a third row to the matrix that has the product of the values from the first two rows. Therefore we choose d to be 3 and make $X \in \mathbb{R}^3$.
 
 Let's put this into python code. We add (here called concatenate) a third row to the original matrix. The third row is the product of the two rows before it.
-``` bash
+```bash
 def phi(X):
     return np.concatenate([X, X.prod(1, keepdims=True)], axis=1)
 ```
@@ -57,3 +58,90 @@ It's shaped like a pringels chip thus allowing us to linearly separate it. The n
 <p align="center"> 
     <img width=400 src="./visualization/XOR_dataPlaneClassified.png">
 </p>
+
+## Adding feature mapping to the simple neural net
+
+First let's have a look at the performance of the model without feature mapping. That way we understand the difference
+
+```bash
+np.random.seed(123) 
+
+net = linearNet(2)
+net.fit(net, X_train, y_train, epochs=20000, learning_rate=0.1, loss_function=mse, dloss_function=dmse)
+```
+<p align="center"> 
+    <img width=400 src="./visualization/XOR_dataPlaneClassified.png">
+</p>
+
+The loss is close to 1 and the accuracy is only 53%. The accuracy tells us that it is a 53% chance or model predicts the label of a point right. It is as bad at predicting as deciding the label based on a coin flip.
+
+<p align="center"> 
+    <img width=400 src="./visualization/XOR_dataPlaneClassified.png">
+</p>
+
+Note: at the beginning it actually went down for many epochs before reaching 50% again. It was doing that to minimize the loss and it tried many epochs to classify the clusters with a line. But then it gave up an just labeled all points as one class. That way the loss could be minimized further and the accuracy went up quickly again before eventually staying around 50%. 
+<br>Let's not spend any more time on our failed model. We rather implement $\phi$ into our model. It is as simple as adding it to the class as a function and using it in the _output_ function and when calculating the gradient _grad_w_ in the _grad_ function.
+
+```bash
+class linearNet:
+    
+    def __init__(self, d):
+        self.w = np.random.normal(scale = np.sqrt(d), size=(d,1))
+        self.b = 0
+    
+    def phi(self, X):
+        return np.concatenate([X, X.prod(1, keepdims=True)], axis=1)
+
+    def output(self, X):
+        return self.phi(X) @ self.w + self.b
+
+    def grad(self, X, y_true, dloss_function):
+        output = self.output(X)
+        y_true = y_true.reshape(-1,1)
+        dloss = dloss_function(y_true, output)
+
+        grad_w = (dloss * self.phi(X)).mean(axis=0).reshape(-1,1)
+        grad_b = dloss.mean()
+
+        return grad_w, grad_b
+    
+    def fit(self, X_train, y_train, epochs, learning_rate, loss_function, dloss_function):
+
+        for i in range(epochs):
+            grad_w, grad_b = self.grad(X_train, y_train, dloss_function)
+
+            self.w -= learning_rate * grad_w
+            self.b -= learning_rate * grad_b
+```
+
+Next we run our improved model with 3 input nodes. This is because our data X has 3 dimensions now so we will have 3 input nodes in our input layer. Furthermore our weights vector has to be adjusted to be from dimension 3 as well.
+
+```bash
+np.random.seed(123) 
+
+net = linearNet(3)
+net.fit(X_train, y_train, epochs=20000, learning_rate=0.1, loss_function=mse, dloss_function=dmse)
+```
+<p align="center"> 
+    <img width=400 src="./visualization/XOR_dataPlaneClassified.png">
+</p>
+
+This is already way better. The loss is 0.4539376487357253
+
+<p align="center"> 
+    <img width=400 src="./visualization/XOR_dataPlaneClassified.png">
+</p>
+
+The accuracy is great at 99% also.
+<br> All this only because we gave our model another dimension to work with. 
+
+The test data predictions look great as well:
+```bash
+test_output = net.output(X_test)[:,0]
+print("The accuracy on test data is "+str(compute_accuracy(y_test, test_output)*100)+"%")
+```
+gives 
+```bash
+The accuracy on test data is 98.0%
+```
+Now the decision boundary looks almost perfect. It recognized the classes very well but I guess the mistakes come from the problem that there are many values close to the border of the classes in the trainings data.
