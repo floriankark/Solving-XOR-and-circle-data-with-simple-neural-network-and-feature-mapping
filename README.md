@@ -144,4 +144,6 @@ gives
 ```bash
 The accuracy on test data is 98.0%
 ```
-Now the decision boundary looks almost perfect. It recognized the classes very well but I guess the mistakes come from the problem that there are many values close to the border of the classes in the trainings data.
+Now the decision boundary looks almost perfect. It recognized the classes very well but I guess the mistakes come from the problem that there are many values close to the border of the classes in the trainings data. Technically it should be able to split the data perfectly but the steps are very short now that we are close to the minimum of our loss function. Maybe running it many more epochs will give a 100% accuracy at least on trainings data. If you want to copy the code and try yourself please do so.
+
+## Feature mapping on circle data
