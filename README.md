@@ -163,3 +163,130 @@ Now the decision boundary looks almost perfect. It recognized the classes very w
 Technically it should be able to split the data perfectly but the steps are very short now that we are close to the minimum of our loss function. Maybe running it many more epochs will give a 100% accuracy at least on trainings data. If you want to copy the code and try yourself please do so.
 
 ## Feature mapping on circle data
+
+First we plot our data. Therefore I sampled points from a normal distribution. Then I took the second half of all points and _"pushed"_ them by normalization away from the center. In this dataset you can actually regulate the noise so that you can create a nonseparable classification problem if you want to.
+
+```bash
+import numpy as np
+import matplotlib.pyplot as plt
+
+def normalize(x,axis=None):
+    return x / np.sqrt((x*x).sum(axis=axis,keepdims=True))
+
+def circle_data(n=100, d=2, noise=4.0):
+    x = np.random.randn(n, d)
+    x[n//2:] +=  noise*normalize(x[n//2:], axis=1) 
+    
+    y = np.ones(n).astype(int)
+    y[n//2:] *= -1
+    
+    return x, y
+
+np.random.seed(123) 
+
+X_train, y_train = circle_data(200)
+X_test, y_test = circle_data(100)
+
+plt.figure(figsize=(5,5))
+scatter = plt.scatter(X_train[:,0], X_train[:,1], c=y_train)
+plt.scatter(X_test[:,0], X_test[:,1], c=y_test)
+plt.legend(*scatter.legend_elements(), loc=4)
+plt.show()
+```
+<p align="center"> 
+    <img width=400 src="./visualization/XOR_goodDecisionBoundary.png">
+</p>
+
+As before the question is "How can we transfrom the points to let us separate them by a plane?" The answer is by taking the squared value of each point. That way our points will be shaped like a bowl in three dimensions. That is because points close to zero will not get much bigger, some get even smaller values. On the other hand points far away from zero get very large and therefore the two clusters will bw separable by a line if viewed from this perspective. That's were we want the plane to go later to have a perfect classification. (Note: if you have similar data but it is not centered at zero you don't need to center it manually. You will likely get a bowl shape but it will be less pronunced and tilted. But you will definetly get a good classification result.)
+
+So let's use $x_1^2$ and $x_2^2$ as our added feature to our Matrix $X$. Then $\phi$ looks like this
+```bash
+def phi(X):
+    return np.concatenate([X, (X[:,0]**2).reshape(-1,1), (X[:,1]**2).reshape(-1,1)], axis=1)
+```
+and the feature space visualized 
+
+<p align="center"> 
+    <img width=400 src="./visualization/CircleData_featureSpace1.png">
+</p>
+
+<p align="center"> 
+    <img width=400 src="./visualization/CircleData_featureSpace2.png">
+</p>
+Now you see what I meant when I talked about a _bowl_ shape
+<p align="center"> 
+    <img width=400 src="./visualization/CircleData_featureSpace3.png">
+</p>
+The neural net should learn this plane in the best case:
+<p align="center"> 
+    <img width=400 src="./visualization/CircleData_featureSpace4.png">
+</p>
+
+Let's run the code in which I only changed $\phi$ and the input nodes to four because we have 4 features $(x_1, x_2, x_1^2, x_2^2)$ in our matrix $X$.
+
+```bash
+class linearNet:
+    
+    def __init__(self, d):
+        self.w = np.random.normal(scale = np.sqrt(d), size=(d,1))
+        self.b = 0
+    
+    def phi(self, X):
+        return np.concatenate([X, (X[:,0]**2).reshape(-1,1), (X[:,1]**2).reshape(-1,1)], axis=1)
+
+    def output(self, X):
+        return self.phi(X) @ self.w + self.b
+
+    def grad(self, X, y_true, dloss_function):
+        output = self.output(X)
+        y_true = y_true.reshape(-1,1)
+        dloss = dloss_function(y_true, output)
+
+        grad_w = (dloss * self.phi(X)).mean(axis=0).reshape(-1,1)
+        grad_b = dloss.mean()
+
+        return grad_w, grad_b
+    
+    def fit(self, X_train, y_train, epochs, learning_rate, loss_function, dloss_function):
+
+        for i in range(epochs):
+            grad_w, grad_b = self.grad(X_train, y_train, dloss_function)
+
+            self.w -= learning_rate * grad_w
+            self.b -= learning_rate * grad_b
+
+
+np.random.seed(123) 
+
+net = linearNet(4)
+net.fit(X_train, y_train, epochs=2000, learning_rate=0.1, loss_function=mse, dloss_function=dmse)
+```
+<p align="center"> 
+    <img width=400 src="./visualization/CircleData_loss.png">
+</p>
+```bash
+Most recent loss is 0.18935173340575734
+```
+<p align="center"> 
+    <img width=400 src="./visualization/CircleData_accuracy.png">
+</p>
+```bash
+Most recent accuracy is 100%
+```
+Those values are extremely good and only possible because we designed the data to be classified very easily.
+<br>Lastly we look at the decision boundary on training data 
+
+<p align="center"> 
+    <img width=400 src="./visualization/CircleData_dbTraining.png">
+</p>
+
+and on test data
+<p align="center"> 
+    <img width=400 src="./visualization/CircleData_dbTesting.png">
+</p>
+```bash
+The accuracy on test data is 100%
+```
+Great results and only because we used some simple input transformation.
+
+I hope this was very informative and maybe you will use more features in you input layer to enhance performance the next time you build a neural network. Check out my last repo on how to build the simple neural network from scratch that I used here.
