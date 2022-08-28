@@ -194,7 +194,7 @@ plt.legend(*scatter.legend_elements(), loc=4)
 plt.show()
 ```
 <p align="center"> 
-    <img width=400 src="./visualization/XOR_goodDecisionBoundary.png">
+    <img width=400 src="./visualization/CircleData_datasets.png">
 </p>
 
 As before the question is "How can we transfrom the points to let us separate them by a plane?" The answer is by taking the squared value of each point. That way our points will be shaped like a bowl in three dimensions. That is because points close to zero will not get much bigger, some get even smaller values. On the other hand points far away from zero get very large and therefore the two clusters will bw separable by a line if viewed from this perspective. That's were we want the plane to go later to have a perfect classification. (Note: if you have similar data but it is not centered at zero you don't need to center it manually. You will likely get a bowl shape but it will be less pronunced and tilted. But you will definetly get a good classification result.)
